@@ -39,13 +39,13 @@ public class testDocument7 {
             System.out.println(result.get(i).getDocument().getContent());
         }
         
-        // panggil fungsi search
-//        ArrayList<Posting> result1 = index.search("machine organization");
-//        // tampilkan isi document dan id-nya
-//        for (int i = 0; i < result1.size(); i++) {
-//            System.out.println("id_doc = " +result1.get(i).getDocument());
-//            System.out.println(result1.get(i).getDocument().getContent());
-//        }
+//         panggil fungsi search
+        ArrayList<Posting> result1 = index.searchOneWord("organization");
+        // tampilkan isi document dan id-nya
+        for (int i = 0; i < result1.size(); i++) {
+            System.out.println("id_doc = " +result1.get(i).getDocument());
+            System.out.println(result1.get(i).getDocument().getContent());
+        }
         
     }
 }
