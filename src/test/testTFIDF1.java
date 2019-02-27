@@ -16,13 +16,13 @@ import model.Term;
  *
  * @author admin
  */
-public class testDocument7 {
+public class testTFIDF1 {
 
     public static void main(String[] args) {
         // seting dokumen
-        Document doc1 = new Document(1, "computer information retrieval.");
-        Document doc2 = new Document(2, "computer organization and architecture");
-        Document doc3 = new Document(3, "machine learning architecture");
+        Document doc1 = new Document(1, "Shipment of gold damaged in a fire");
+        Document doc2 = new Document(2, "delivery of silver arrived in a silver truck");
+        Document doc3 = new Document(3, "shipment of gold arrived in a truck");
         
         // buat object invertedIndex
         InvertedIndex index = new InvertedIndex();
@@ -30,21 +30,14 @@ public class testDocument7 {
         index.addNewDocument(doc1);
         index.addNewDocument(doc2);
         index.addNewDocument(doc3);
-        index.makeDictionary();
+        
         // panggil fungsi search
-        ArrayList<Posting> result = index.searchOneWord("machine");
+        index.makeDictionary();
+        ArrayList<Posting> result = index.search("machine learning inteligence");
         // tampilkan isi document dan id-nya
         for (int i = 0; i < result.size(); i++) {
             System.out.println("id_doc = " +result.get(i).getDocument().getId());
             System.out.println(result.get(i).getDocument().getContent());
-        }
-        
-//         panggil fungsi search
-        ArrayList<Posting> result1 = index.searchOneWord("organization");
-        // tampilkan isi document dan id-nya
-        for (int i = 0; i < result1.size(); i++) {
-            System.out.println("id_doc = " +result1.get(i).getDocument().getId());
-            System.out.println(result1.get(i).getDocument().getContent());
         }
         
     }
