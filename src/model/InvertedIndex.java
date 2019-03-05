@@ -303,25 +303,34 @@ public class InvertedIndex {
      * @return 
      */
     public int getDocumentFrequency(String term){
+        Term tempTerm = new Term(term);
+        int number = Collections.binarySearch(getDictionary(), tempTerm);
+        if (number > 0) {
+            return getDictionary().get(number).getPostingList().size();
+        }
         return 0;
     }
     
-    /**
-     * Fungsi untuk mencari inverse term dari sebuah index
-     * @param term
-     * @return 
-     */
-    public double getInverseDocumentFrequency(String term){
-        return 0.0;
+    public double getInverseDoumentFrequency(String term){
+        double N = listOfDocument.size();
+        double n = getDocumentFrequency(term);
+        
+        double idf = Math.log10(N/n);
+        return idf;
     }
     
-    /**
-     * Fungsi untuk mencari term frequency
-     * @param term
-     * @param idDocument
-     * @return 
-     */
-    public int getTermFrequency(String term, int idDocument){
-        return 0;
-    }
+    public int getTermFrequency(String term, int idDocument) {
+        int temp = 0;
+        for (int i = 0; i < getListOfDocument().size(); i++) {
+            if (getListOfDocument().get(i).getId() == idDocument) {
+                String[] terms = getListOfDocument().get(i).getListofTerm();
+                for (int j = 0; j < terms.length; j++) {
+                    if (term.equalsIgnoreCase(terms[j])) {
+                        temp = temp + 1;
+                    }
+                }
+            }
+        }
+        return temp;
+}
 }
