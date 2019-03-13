@@ -63,6 +63,7 @@ public class testTFIDF7 {
         System.out.println("TF of "+tempString2+" in idDoc = "+idDoc+ " is "+result4);
         
         // make arraylist of TFIDF
+        
         idDoc=1;
         ArrayList<Posting> tempDocWeight = index.makeTFIDF(idDoc);
         for (int i = 0; i < tempDocWeight.size(); i++) {
