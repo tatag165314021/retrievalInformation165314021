@@ -6,7 +6,12 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.function.Consumer;
 
 /**
  *
@@ -330,7 +335,8 @@ public class InvertedIndex {
             // jumlah dokumen dengan term i
             int ni = getDocumentFrequency(term);
             // idf = log10(N/ni)
-            return Math.log10(N / ni);
+            double Nni = (double) N / ni;
+            return Math.log10(Nni);
         } else {
             // term tidak ada
             // nilai idf = 0
@@ -369,49 +375,81 @@ public class InvertedIndex {
      * @param idDocument
      */
     public ArrayList<Posting> makeTFIDF(int idDocument) {
-        Document doc = new Document();
-        doc.setId(idDocument);
-        int cek = Collections.binarySearch(listOfDocument, doc);
-        if (cek < 0) {
-            return null;
-        } else {
-            doc = listOfDocument.get(cek);
-            ArrayList<Posting> result = doc.getListofPosting();
-            Collections.sort(result);
+        // buat posting list hasil
+        ArrayList<Posting> result = new ArrayList<Posting>();
+        // buat document temporary, sesuai passing parameter
+        Document temp = new Document(idDocument);
+        // cek document temp, ada di dalam list document?
+        int cari = Collections.binarySearch(listOfDocument, temp);
+        // jika ada, variable cari akan berisi indeks. nilai lebih dari 0
+        if (cari >= 0) {
+            // dokumen ada
+            // baca dokumen sesuai indek di list dokumen
+            temp = listOfDocument.get(cari);
+            // buat posting list dengan bobot masih 0
+            result = temp.getListofPosting();
+            // isi bobot dari posting list
             for (int i = 0; i < result.size(); i++) {
-                double w = getTermFrequency(result.get(i).getTerm(), idDocument) * getInverseDocumentFrequency(result.get(i).getTerm());
-                result.get(i).setTerm(result.get(i).getTerm());
-                result.get(i).setNumberOfTerm(getTermFrequency(result.get(i).getTerm(), idDocument));
-                result.get(i).setWeight(w);
+                // ambil term
+                String tempTerm = result.get(i).getTerm();
+                // cari idf
+                double idf = getInverseDocumentFrequency(tempTerm);
+                // cari tf
+                int tf = result.get(i).getNumberOfTerm();
+                // hitung bobot
+                double bobot = tf * idf;
+                // set bobot pada posting
+                result.get(i).setWeight(bobot);
             }
-            return result;
+            Collections.sort(result);
+        } else {
+            // dokumen tidak ada
         }
-    }
-
-    public ArrayList<Posting> makeQueryTFIDF(String query) {
-        Document doc = new Document();
-        doc.setContent(query);
-
-        ArrayList<Posting> result = doc.getListofPosting();
-        for (int i = 0; i < result.size(); i++) {
-            // weight = tf * idf
-            double weight = result.get(i).getNumberOfTerm() * getInverseDocumentFrequency(result.get(i).getTerm());
-
-            result.get(i).setWeight(weight);
-        }
-
         return result;
     }
 
+    /**
+     * Fungsi perkalian inner product dari PostingList Atribut yang dikalikan
+     * adalah atribut weight TFIDF dari posting
+     *
+     * @param p1
+     * @param p2
+     * @return
+     */
     public double getInnerProduct(ArrayList<Posting> p1, ArrayList<Posting> p2) {
-        double result = 0;
-        for (int i = 0; i < p1.size(); i++) {
-            int pos = Collections.binarySearch(p2, p1.get(i));
-            if (pos >= 0) {
-                result = result + (p1.get(pos).getWeight() * p2.get(pos).getWeight());
-            }
-        }
 
+        Collections.sort(p2);
+        Collections.sort(p1);
+        double result = 0.0;
+        for (int i = 0; i < p1.size(); i++) {
+            Posting temp = p1.get(i);
+            boolean found = false;
+            for (int j = 0; j < p2.size() && found == false; j++) {
+                Posting temp1 = p2.get(j);
+                if (temp1.getTerm().equalsIgnoreCase(temp.getTerm())) {
+                    found = true;
+                    result = result + temp1.getWeight() * temp.getWeight();
+                }
+
+            }
+
+        }
+        return result;
+    }
+
+    /**
+     * Fungsi untuk membentuk posting list dari sebuah query
+     *
+     * @param query
+     * @return
+     */
+    public ArrayList<Posting> getQueryPosting(String query) {
+        Document temp =new Document(0,query);
+        ArrayList<Posting> result=temp.getListofPosting();
+        for (int i = 0; i < result.size(); i++) {
+            double weight=result.get(i).getNumberOfTerm()*getInverseDocumentFrequency(result.get(i).getTerm());
+            result.get(i).setWeight(weight);
+        }
         return result;
     }
 }
