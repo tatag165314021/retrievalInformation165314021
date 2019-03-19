@@ -6,9 +6,7 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.StringTokenizer;
 
 /**
  *
@@ -73,7 +71,7 @@ public class Document implements Comparable<Document>{
         // panggil fungsi getListOfTerm
         String tempString[] = getListofTerm();
         // buat objek ArrayList<Posting> result untuk menampung hasil
-        ArrayList<Posting> result = new ArrayList<Posting>();
+        ArrayList<Posting> result = new ArrayList<>();
         // buat looping sebanyak listOfTerm
         for (int i = 0; i < tempString.length; i++) {
             // di dalam looping
