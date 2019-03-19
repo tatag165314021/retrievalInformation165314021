@@ -492,7 +492,6 @@ public class InvertedIndex {
         for (int i = 0; i < posting.size(); i++) {
             length += posting.get(i).getWeight() * posting.get(i).getWeight();
         }
-
         return Math.sqrt(length);
     }
 
@@ -504,16 +503,9 @@ public class InvertedIndex {
      * @return
      */
     public double getCosineSimilarity(ArrayList<Posting> posting, ArrayList<Posting> posting1) {
-        // menghitung inner product dari 2 posting
-        // hitung inner product dari kedua posting list
         double innerProduct = getInnerProduct(posting, posting1);
-
-        // hitung jarak
         double length = getLengthOfPosting(posting) * getLengthOfPosting(posting1);
-
-        // hitung cosine similarity
         double cosineSimilarity = innerProduct / length;
-
         return cosineSimilarity;
     }
 
@@ -524,26 +516,14 @@ public class InvertedIndex {
      * @return
      */
     public ArrayList<SearchingResult> searchTFIDF(String query) {
-        // buat list of searchingResult untuk menampung hasil pencarian
         ArrayList<SearchingResult> searchingResults = new ArrayList<>();
-
-        // hitung tfidf untuk query
         ArrayList<Posting> queryTFIDF = makeTFIDF(query);
-
-        for (int i = 0; i < listOfDocument.size(); i++) {
-            // hitung tfidf dari dokumen
+        for (int i = 0; i < listOfDocument.size(); i++) {           
             ArrayList<Posting> documentTFIDF = makeTFIDF(listOfDocument.get(i).getId());
-
-            // hitung inner product antara query dan dokumen
             double similarity = getInnerProduct(queryTFIDF, documentTFIDF);
-
-            // masukkan similarity dan dokumen yang bersangkutan ke list searchingResult
             searchingResults.add(new SearchingResult(similarity, listOfDocument.get(i)));
         }
-
-        // urutkan searchingResults berdasar similarity terbesar
         Collections.sort(searchingResults, Collections.reverseOrder());
-
         return searchingResults;
 
     }
@@ -555,26 +535,14 @@ public class InvertedIndex {
      * @return
      */
     public ArrayList<SearchingResult> searchCosineSimilarity(String query) {
-        // buat list of searchingResult untuk menampung hasil pencarian
         ArrayList<SearchingResult> searchingResults = new ArrayList<>();
-
-        // hitung tfidf untuk query
         ArrayList<Posting> queryTFIDF = makeTFIDF(query);
-
         for (int i = 0; i < listOfDocument.size(); i++) {
-            // hitung tfidf dari dokumen
             ArrayList<Posting> documentTFIDF = makeTFIDF(listOfDocument.get(i).getId());
-
-            // hitung inner product antara query dan dokumen
             double similarity = getCosineSimilarity(queryTFIDF, documentTFIDF);
-
-            // masukkan similarity dan dokumen yang bersangkutan ke list searchingResult
             searchingResults.add(new SearchingResult(similarity, listOfDocument.get(i)));
         }
-
-        // urutkan searchingResults dari similarity yang paling besar
         Collections.sort(searchingResults, Collections.reverseOrder());
-
         return searchingResults;
     }
 
