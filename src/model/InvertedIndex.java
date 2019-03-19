@@ -403,6 +403,21 @@ public class InvertedIndex {
         return result;
     }
 
+    public ArrayList<Posting> makeTFIDF(String query) {
+        Document doc = new Document();
+        doc.setContent(query);
+
+        ArrayList<Posting> result = doc.getListofPosting();
+        for (int i = 0; i < result.size(); i++) {
+            // weight = tf * idf
+            double weight = result.get(i).getNumberOfTerm() * getInverseDocumentFrequency(result.get(i).getTerm());
+
+            result.get(i).setWeight(weight);
+        }
+
+        return result;
+    }
+
     /**
      * Fungsi perkalian inner product dari PostingList Atribut yang dikalikan
      * adalah atribut weight TFIDF dari posting
@@ -473,12 +488,12 @@ public class InvertedIndex {
      * @return
      */
     public double getLengthOfPosting(ArrayList<Posting> posting) {
-        double result = 0.0;
+        double length = 0;
         for (int i = 0; i < posting.size(); i++) {
-            result = result + Math.pow(posting.get(i).getWeight(), 2);
+            length += posting.get(i).getWeight() * posting.get(i).getWeight();
         }
-        double hasil = Math.sqrt(result);
-        return hasil;
+
+        return Math.sqrt(length);
     }
 
     /**
@@ -490,18 +505,16 @@ public class InvertedIndex {
      */
     public double getCosineSimilarity(ArrayList<Posting> posting, ArrayList<Posting> posting1) {
         // menghitung inner product dari 2 posting
-        double atas = getInnerProduct(posting, posting1);
-        double bawah1 = 0.0;
-        double bawah2 = 0.0;
-        for (int i = 0; i < posting.size(); i++) {
-            bawah1 = bawah1 + Math.pow(posting.get(i).getWeight(), 2);
-        }
-        for (int j = 0; j < posting1.size(); j++) {
-            bawah2 = bawah2 + Math.pow(posting1.get(j).getWeight(), 2);
-        }
-        double bawah = Math.sqrt(bawah1 * bawah2);
-        double hasil = atas / bawah;
-        return hasil;
+        // hitung inner product dari kedua posting list
+        double innerProduct = getInnerProduct(posting, posting1);
+
+        // hitung jarak
+        double length = getLengthOfPosting(posting) * getLengthOfPosting(posting1);
+
+        // hitung cosine similarity
+        double cosineSimilarity = innerProduct / length;
+
+        return cosineSimilarity;
     }
 
     /**
@@ -511,9 +524,27 @@ public class InvertedIndex {
      * @return
      */
     public ArrayList<SearchingResult> searchTFIDF(String query) {
-        Document temp = new Document(-1, query);
+        // buat list of searchingResult untuk menampung hasil pencarian
+        ArrayList<SearchingResult> searchingResults = new ArrayList<>();
 
-        return null;
+        // hitung tfidf untuk query
+        ArrayList<Posting> queryTFIDF = makeTFIDF(query);
+
+        for (int i = 0; i < listOfDocument.size(); i++) {
+            // hitung tfidf dari dokumen
+            ArrayList<Posting> documentTFIDF = makeTFIDF(listOfDocument.get(i).getId());
+
+            // hitung inner product antara query dan dokumen
+            double similarity = getInnerProduct(queryTFIDF, documentTFIDF);
+
+            // masukkan similarity dan dokumen yang bersangkutan ke list searchingResult
+            searchingResults.add(new SearchingResult(similarity, listOfDocument.get(i)));
+        }
+
+        // urutkan searchingResults berdasar similarity terbesar
+        Collections.sort(searchingResults, Collections.reverseOrder());
+
+        return searchingResults;
 
     }
 
@@ -524,7 +555,27 @@ public class InvertedIndex {
      * @return
      */
     public ArrayList<SearchingResult> searchCosineSimilarity(String query) {
-        return null;
+        // buat list of searchingResult untuk menampung hasil pencarian
+        ArrayList<SearchingResult> searchingResults = new ArrayList<>();
+
+        // hitung tfidf untuk query
+        ArrayList<Posting> queryTFIDF = makeTFIDF(query);
+
+        for (int i = 0; i < listOfDocument.size(); i++) {
+            // hitung tfidf dari dokumen
+            ArrayList<Posting> documentTFIDF = makeTFIDF(listOfDocument.get(i).getId());
+
+            // hitung inner product antara query dan dokumen
+            double similarity = getCosineSimilarity(queryTFIDF, documentTFIDF);
+
+            // masukkan similarity dan dokumen yang bersangkutan ke list searchingResult
+            searchingResults.add(new SearchingResult(similarity, listOfDocument.get(i)));
+        }
+
+        // urutkan searchingResults dari similarity yang paling besar
+        Collections.sort(searchingResults, Collections.reverseOrder());
+
+        return searchingResults;
     }
 
 }
