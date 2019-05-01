@@ -6,17 +6,19 @@
 package model;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collection;
+import org.apache.lucene.analysis.id.*;
 import java.util.Collections;
-import java.util.StringTokenizer;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.en.PorterStemFilter;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.util.Version;
@@ -25,7 +27,7 @@ import org.apache.lucene.util.Version;
  *
  * @author puspaningtyas
  */
-public class Document implements Comparable<Document>{
+public class Document implements Comparable<Document> {
 
     private int id;
     private String content; // atribut content yang dianalisis
@@ -40,7 +42,7 @@ public class Document implements Comparable<Document>{
 
     public Document(String content) {
         this.content = content;
-        this.realContent=content;
+        this.realContent = content;
     }
 
     public Document(int id, String content) {
@@ -94,7 +96,7 @@ public class Document implements Comparable<Document>{
             // jika term pertama maka
             if (i == 0) {
                 // buat object tempPosting
-                Posting temPosting = new Posting(tempString[0],this);
+                Posting temPosting = new Posting(tempString[0], this);
                 // set atribut document, gunakan this
                 // tambahkan ke ArrayList result
                 result.add(temPosting);
@@ -105,20 +107,20 @@ public class Document implements Comparable<Document>{
                 // cek apakah term sudah ada
                 // gunakan fungsi search dengan luaran indeks obyek yang memenuhi
                 // buat object tempPosting           
-                Posting temPosting = new Posting(tempString[i],this);
-                int indexCari = Collections.binarySearch(result,temPosting);
+                Posting temPosting = new Posting(tempString[i], this);
+                int indexCari = Collections.binarySearch(result, temPosting);
                 // jika hasil cari kurang dari 0  (obyek tidak ada)
-                if (indexCari <0){
+                if (indexCari < 0) {
                     // set atribut document, gunakan this
                     // tambahkan ke ArrayList result
                     result.add(temPosting);
-                } else{
-                // lainnya   (obyek ada)
+                } else {
+                    // lainnya   (obyek ada)
                     // ambil postingnya, 
                     // tambahkan atribut numberOfTerm dengan 1
                     // dgn fungsi get
                     // int tempNumber = get(indekshasilCari).getNumberOfTerm()+1;
-                    int tempNumber = result.get(indexCari).getNumberOfTerm()+1;
+                    int tempNumber = result.get(indexCari).getNumberOfTerm() + 1;
                     // atau get(indekshasilcari.setNumberOfTerm(tempNumber)
                     result.get(indexCari).setNumberOfTerm(tempNumber);
                 }
@@ -129,14 +131,14 @@ public class Document implements Comparable<Document>{
 
     @Override
     public int compareTo(Document doc) {
-        return id-doc.getId();
+        return id - doc.getId();
     }
 
     /**
-     * Fungsi untuk membaca sebuah file *.txt dan 
-     * hasil baca dimasukkan ke atribut content
+     * Fungsi untuk membaca sebuah file *.txt dan hasil baca dimasukkan ke
+     * atribut content
      */
-    public void readFile(int idDoc, File file){
+    public void readFile(int idDoc, File file) {
         // simpan idDoc
         this.id = idDoc;
         // baca file
@@ -147,11 +149,10 @@ public class Document implements Comparable<Document>{
         return "Document{" + "id=" + id + ", content=" + content + ", realContent=" + realContent + '}';
     }
 
-    
     /**
      * Fungsi untuk menghilangkan kata stop word
      */
-    public void removeStopWords(){
+    public void removeStopWords() {
         // asumsi content sudah ada
         String text = content;
         Version matchVersion = Version.LUCENE_7_7_0; // Substitute desired Lucene version for XY
@@ -179,11 +180,11 @@ public class Document implements Comparable<Document>{
         }
         content = sb.toString();
     }
-    
+
     /**
      * Fungsi untuk menghilangkan stop word dan stemming
      */
-    public void stemming(){
+    public void stemming() {
         String text = content;
 //        System.out.println("Text = "+text);
         Version matchVersion = Version.LUCENE_7_7_0; // Substitute desired Lucene version for XY
@@ -223,12 +224,30 @@ public class Document implements Comparable<Document>{
     public void setRealContent(String realContent) {
         this.realContent = realContent;
     }
-    
+
     /**
      * Fungsi untuk mensteming content dalam bahasa indonesia
      */
-    public void IndonesiaStemming(){
-        
+    public void IndonesiaStemming() {
+        String text = content;
+        IndonesianAnalyzer analyzer = new IndonesianAnalyzer();
+        TokenStream tokenStream = analyzer.tokenStream(
+                "myField",
+                new StringReader(text.trim()));
+        tokenStream = new PorterStemFilter(tokenStream);
+        StringBuilder sb = new StringBuilder();
+        CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
+
+        try {
+            tokenStream.reset();
+            while (tokenStream.incrementToken()) {
+                String term = charTermAttribute.toString();
+                sb.append(term).append(" ");
+            }
+        } catch (IOException ex) {
+            System.out.println("Exception: " + ex);
+        }
+        content = sb.toString();
     }
-    
+
 }
